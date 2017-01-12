@@ -4,13 +4,6 @@ using System.Linq;
 
 namespace Aoc2016_11
 {
-    class Tracker
-    {
-        public State State { get; set; }
-        public Tracker Previous { get; set; }
-        public int Depth { get; set; }
-    }
-
     internal class Solver
     {
         /*
@@ -22,7 +15,7 @@ namespace Aoc2016_11
 
         public Tracker Solve(State initialState)
         {
-            var seen = new HashSet<string>();
+            var seen = new HashSet<int>();
 
             var actorCount = initialState.Floors.Sum(f => f.Count);
 
@@ -41,8 +34,8 @@ namespace Aoc2016_11
                 }
 
                 /*
-                Console.WriteLine($"Depth: {currentDepth}");
-                Console.WriteLine(currentState);
+                Console.WriteLine($"Depth: {current.Depth}");
+                Console.WriteLine(current.State);
                 Console.WriteLine("-----------------------");
                 */
 
@@ -54,7 +47,7 @@ namespace Aoc2016_11
                 foreach (var move in validMoves)
                 {
                     var stateAfterApplyingMove = ApplyMove(move, current.State);
-                    var stateAfterApplyingMoveKey = stateAfterApplyingMove.ToString();
+                    var stateAfterApplyingMoveKey = stateAfterApplyingMove.GetHashCode();
 
                     if (seen.Contains(stateAfterApplyingMoveKey))
                         continue;
@@ -79,9 +72,9 @@ namespace Aoc2016_11
             var newFloor = NewFloor(state, move.Direction);
 
             return new State
-            {
-                Elevator = newFloor,
-                Floors = Enumerable.Range(0, state.Floors.Count)
+            (
+                newFloor,
+                Enumerable.Range(0, state.Floors.Count)
                     .Zip
                     (
                         state.Floors,
@@ -90,7 +83,7 @@ namespace Aoc2016_11
                                 : (floorIndex == newFloor ? actors.Concat(move.Actors) : actors)
                                 .ToList()
                     ).ToList()
-            };
+            );
 
         }
 

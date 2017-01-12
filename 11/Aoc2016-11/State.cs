@@ -6,17 +6,47 @@ using System.Text.RegularExpressions;
 
 namespace Aoc2016_11
 {
-    internal class State : IComparable<State>
+    internal class State
     {
-        public int Elevator { get; set; }
-        public List<List<Actor>> Floors { get; set; }
+        public int Elevator { get; }
+        public List<List<Actor>> Floors { get; }
 
-        public int CompareTo(State other)
+        private string _description;
+        private int? _hashCode;
+
+        public State(int elevator, List<List<Actor>> floors)
         {
-            return string.Compare(ToString(), other.ToString(), StringComparison.Ordinal);
+            Elevator = elevator;
+            Floors = floors;
         }
 
         public override string ToString()
+        {
+            return _description ?? (_description = Description());
+        }
+
+        public override int GetHashCode()
+        {
+            if (_hashCode.HasValue)
+                return _hashCode.Value;
+
+            int n = 0;
+            var ret = new StringBuilder();
+            foreach (var floor in Floors)
+            {
+                ret.Append(n == Elevator ? "!" : "-");
+                foreach (var actor in floor.OrderBy(a => a))
+                {
+                    ret.Append(actor);
+                }
+                ++n;
+            }
+
+            _hashCode = ret.ToString().GetHashCode();
+            return _hashCode.Value;
+        }
+
+        private string Description()
         {
             var ret = new StringBuilder();
 
@@ -55,7 +85,7 @@ namespace Aoc2016_11
                 floors[desc.Key] = desc.Value.ToList();
             }
 
-            return new State {Elevator = 0, Floors = floors};
+            return new State(0, floors);
         }
 
         private static readonly string[] Ordinals = {"first", "second", "third", "fourth"};

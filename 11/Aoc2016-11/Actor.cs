@@ -3,9 +3,9 @@ using System.Linq;
 
 namespace Aoc2016_11
 {
-    internal class Actor
+    internal class Actor : IComparable
     {
-        public string Element => Description.Substring(0, 2);
+        public string Element { get; }
 
         public bool IsChip => Description[2] == 'M';
         public bool IsGenerator => Description[2] == 'G';
@@ -15,6 +15,7 @@ namespace Aoc2016_11
         public Actor(string element, bool chip)
         {
             Description = new string(element.ToUpperInvariant().Take(2).Concat(new[] { chip ? 'M' : 'G' }).ToArray());
+            Element = Description.Substring(0, 2);
         }
 
         public int CompareTo(object obj)
