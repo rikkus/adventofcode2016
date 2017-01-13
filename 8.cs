@@ -172,7 +172,7 @@ rotate row y=0 by 4
 rotate column x=1 by 1"
 .Split(new[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
 
-var rectExpr = new Regex(@"^rect (?<x>\d)+x(?<y>\d+)$");
+var rectExpr = new Regex(@"^rect (?<x>\d+)x(?<y>\d+)$");
 var rotateColumnExpr = new Regex(@"^rotate column x=(?<x>\d+) by (?<n>\d+)$");
 var rotateRowExpr = new Regex(@"^rotate row y=(?<y>\d+) by (?<n>\d+)$");
 
