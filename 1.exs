@@ -1,5 +1,40 @@
-defmodule Vec, do: defstruct x: 0, y: 0
+defmodule Int do
+  def to_unit(n) do
+    case n do
+      0 -> 0
+      x when x < 0 -> -1
+      _ -> 1
+    end
+  end
+end
 
+defmodule Vec do
+  
+  defstruct x: 0, y: 0
+
+  def origin, do: %Vec{}
+  def subtract(from, other), do: %Vec{x: other.x - from.x, y: other.y - from.y}
+  def magnitude(v), do: v.x + v.y
+  def manhattan_distance(vec1, vec2), do: Vec.subtract(vec1, vec2) |> Vec.magnitude
+  def to_unit(vec), do: %Vec{x: Int.to_unit(vec.x), y: Int.to_unit(vec.y)}
+
+  def move(position, direction), do: %Vec{x: position.x + direction.x, y: position.y + direction.y}
+  def move(position, unit_direction, distance) do
+    position |> move(%Vec{x: unit_direction.x * distance, y: unit_direction.y * distance})
+  end
+
+  @doc """
+  Walk from start to finish, which must be on a horizontal or vertical line from start.
+  Returns the steps taken
+  """
+  def walk(start, finish) do
+    unit = Vec.to_unit(start |> Vec.subtract(finish))
+    distance = Vec.manhattan_distance(start, finish) |> abs
+    1..distance |> Enum.map(&(Vec.move(start, unit, &1)))
+  end
+
+end
+ 
 defimpl String.Chars, for: Vec do
   def to_string(v), do: "{#{v.x}, #{v.y}}" 
 end
@@ -10,21 +45,19 @@ end
 
 defmodule App do
 
-  @origin %Vec{}
-
   @n %Vec{y: 1}
   @s %Vec{y: -1}
   @e %Vec{x: 1}
   @w %Vec{x: -1}
 
-  def turn_vector(@n,  "R"), do: @e
-  def turn_vector(@e,  "R"), do: @s
-  def turn_vector(@s,  "R"), do: @w
-  def turn_vector(@w,  "R"), do: @n
-  def turn_vector(@n,  "L"), do: @w
-  def turn_vector(@e,  "L"), do: @n
-  def turn_vector(@s,  "L"), do: @e
-  def turn_vector(@w,  "L"), do: @s
+  def turn(@n,  "R"), do: @e
+  def turn(@e,  "R"), do: @s
+  def turn(@s,  "R"), do: @w
+  def turn(@w,  "R"), do: @n
+  def turn(@n,  "L"), do: @w
+  def turn(@e,  "L"), do: @n
+  def turn(@s,  "L"), do: @e
+  def turn(@w,  "L"), do: @s
 
   def parse_move_list(input) do
     input
@@ -39,29 +72,8 @@ defmodule App do
     )
   end
 
-  def integers(start, count) do
-    Stream.iterate(start, &(&1+1)) |> Enum.take(count)
-  end
- 
-  @doc """
-  Walk from start to finish, which must be on a horizontal or vertical line from start.
-  Returns the steps taken
-  """
-  def walk(start, finish) do
-    sign =
-    if start.x == finish.x do
-      if start.y < finish.y, do: 1, else: -1
-    else
-      if start.x < finish.x, do: 1, else: -1
-    end
-
-    if start.x == finish.x do
-      integers(1, abs(finish.y - start.y))
-      |> Enum.map(fn(y) -> %Vec{x: start.x, y: start.y + y * sign} end)
-    else
-      integers(1, abs(finish.x - start.x))
-      |> Enum.map(fn(x) -> %Vec{x: start.x + x * sign, y: start.y} end)
-    end
+ def first_visited_path_element(path, visited_nodes) do
+    Enum.find(path, nil, fn(x) -> MapSet.member?(visited_nodes, x) end)
   end
 
   @doc """
@@ -71,29 +83,25 @@ defmodule App do
     parse_move_list(input)
     |> Enum.reduce_while(
       %{
-        visited: MapSet.new([@origin]),
-        position: @origin,
+        visited: MapSet.new([Vec.origin]),
+        position: Vec.origin,
         direction: @n
       },
-      fn (item, acc) ->
+      fn (step, acc) ->
 
         # Which direction will we be facing after modifying our current direction with the move's direction?
-        new_direction = turn_vector(acc.direction, item.turn_direction)
+        new_direction = turn(acc.direction, step.turn_direction)
 
         # After moving in new_direction by the move's number of steps, where are we?
-        new_position = %Vec{
-          x: acc.position.x + new_direction.x * item.distance,
-          y: acc.position.y + new_direction.y * item.distance
-        }
+        new_position = acc.position |> Vec.move(new_direction, step.distance)
 
         # What is the path from where we were to where we are now?
-        w = walk(acc.position, new_position)
+        path = acc.position |> Vec.walk(new_position)
 
         # Debug...
-        # IO.puts "#{inspect item} -> #{inspect new_direction} Walking #{inspect w}"
+        # IO.puts "#{inspect step} -> #{inspect new_direction} Walking #{inspect w}"
 
-        # Find where we cross a visited node (if at all).
-        crossing = Enum.find(w, nil, fn(x) -> MapSet.member?(acc.visited, x) end)
+        crossing = first_visited_path_element(path, acc.visited)
 
         case crossing do
           nil -> {
@@ -101,7 +109,7 @@ defmodule App do
             :cont,
             %{
               # Add the steps we've walked to the set of visited nodes
-              visited: MapSet.union(acc.visited, MapSet.new(w)),
+              visited: MapSet.union(acc.visited, MapSet.new(path)),
               position: new_position,
               direction: new_direction
             }
