@@ -30,7 +30,7 @@ defmodule GridNode do
   end
 
   def would_fit_on(node1, node2) do
-    node1.used <= GridNode.avail(node2)
+    node1.used > 0 and node1.used <= GridNode.avail(node2)
   end
 
 end

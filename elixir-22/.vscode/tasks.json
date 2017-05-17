@@ -1,0 +1,32 @@
+{
+  "version": "0.1.0",
+  "command": "C:\\Program Files (x86)\\Elixir\\bin\\mix.bat",
+  "isShellCommand": true,
+  "showOutput": "always",
+  "suppressTaskName": true,
+  "tasks": [
+    {
+      "taskName": "build",
+      "args": [
+        "compile"
+      ],
+      "problemMatcher": [
+        "$mixCompileError",
+        "$mixCompileWarning"
+      ],
+      "isBuildCommand": true
+    },
+    {
+      "taskName": "test",
+      "args": [
+        "test"
+      ],
+      "problemMatcher": [
+        "$mixCompileError",
+        "$mixCompileWarning",
+        "$mixTestFailure"
+      ],
+      "isTestCommand": true
+    }
+  ]
+}
