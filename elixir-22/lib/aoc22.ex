@@ -1,6 +1,21 @@
 defmodule Aoc22 do
   use Application
 
+  def is_solved(grid) do
+    grid.nodes[{0, 0}].tag == {grid.max_x, 0}
+  end
+
+  def solve(grid, depth) do
+
+    if is_solved(grid) do
+      depth
+    else
+      Grid.all_possible_moves(grid)
+        |> Enum.map(fn(move) -> solve(Grid.move(move.node, move.new_position, grid), depth + 1) end)
+    end
+
+  end
+
   def start(_type, _args) do
     input = File.stream!("C:\\Users\\rik\\Documents\\22-input.txt")
 
@@ -43,12 +58,8 @@ defmodule Aoc22 do
 
     grid = %Grid{max_x: max_x, max_y: max_y, nodes: node_map}
 
-    all_possible_moves = Grid.all_possible_moves(grid)
+    IO.puts solve(grid, 0)
 
-    IO.inspect all_possible_moves
-
-    IO.inspect Grid.move(grid.nodes[{0, 1}], {1, 1}, grid)
-   
     Supervisor.start_link [], strategy: :one_for_one
   end
 end

@@ -1,6 +1,6 @@
 defmodule GridNode do
 
-  defstruct x: nil, y: nil, size: nil, used: nil
+  defstruct x: nil, y: nil, size: nil, used: nil, tag: {-1, -1}
 
   def avail(s) do
     s.size - s.used
@@ -14,7 +14,8 @@ defmodule GridNode do
           x: String.to_integer(x),
           y: String.to_integer(y),
           size: String.to_integer(size),
-          used: String.to_integer(used)
+          used: String.to_integer(used),
+          tag: {String.to_integer(x), String.to_integer(y)}
         }
       _ -> nil
     end

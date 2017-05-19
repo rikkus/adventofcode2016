@@ -2,9 +2,13 @@ defmodule Grid do
   defstruct max_x: 0, max_y: 0, nodes: %{}
 
   def all_possible_moves(grid) do
-    Map.values(grid.nodes)
-    |> Enum.map(fn(node) -> %{node: node, moves: possible_moves(node, grid)} end)
-    |> Enum.filter(fn(node_and_moves) -> !Enum.empty?(node_and_moves.moves) end)
+    grid.nodes
+    |> Map.values
+    |> Enum.flat_map(fn(node) ->
+        possible_moves(node, grid)
+        |> Enum.map(fn(new_position) -> %{node: node, new_position: new_position} end)
+      end
+    )
   end
 
   def move(node, new_position, grid) do
@@ -17,11 +21,12 @@ defmodule Grid do
 
   defp move_node(from_node, new_position, nodes) do
     [new_x, new_y] = [elem(new_position, 0), elem(new_position, 1)]
-    Map.values(nodes)
+    nodes
+    |> Map.values
     |> Enum.map(fn(n) ->
         cond do
-          n.x == from_node.x && n.y == from_node.y -> %GridNode{size: n.size, used: 0, size: n.size, x: n.x, y: n.y}
-          n.x == new_x && n.y == new_y -> %GridNode{size: n.size, used: from_node.used, size: n.size, x: n.x, y: n.y}
+          n.x == from_node.x && n.y == from_node.y -> %GridNode{size: n.size, x: n.x, y: n.y, used: 0, tag: {-1, -1}}
+          n.x == new_x && n.y == new_y -> %GridNode{size: n.size, x: n.x, y: n.y, used: from_node.used, tag: from_node.tag}
           n -> n
         end
       end
