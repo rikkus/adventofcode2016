@@ -5,13 +5,21 @@ defmodule Aoc22 do
     grid.nodes[{0, 0}].tag == {grid.max_x, 0}
   end
 
-  def solve(grid, depth) do
+  def solve(grid, depth, previous_states) do
 
     if is_solved(grid) do
       depth
     else
       Grid.all_possible_moves(grid)
-        |> Enum.map(fn(move) -> solve(Grid.move(move.node, move.new_position, grid), depth + 1) end)
+        |> Enum.map(fn(move) ->
+          state = Grid.move(move.node, move.new_position, grid)
+          %{state: state, string: to_string(state)}
+        end)
+        |> Enum.filter(fn(s) -> !MapSet.member?(previous_states, (s.string)) end)
+        |> Enum.map(fn(s) ->
+            IO.puts s.string
+            solve(s.state, depth + 1, MapSet.put(previous_states, s.string))
+        end)
     end
 
   end
@@ -58,7 +66,9 @@ defmodule Aoc22 do
 
     grid = %Grid{max_x: max_x, max_y: max_y, nodes: node_map}
 
-    IO.puts solve(grid, 0)
+#    IO.inspect Grid.all_possible_moves(grid)
+#    IO.puts to_string(grid)
+    IO.puts solve(grid, 0, MapSet.new([to_string(grid)]))
 
     Supervisor.start_link [], strategy: :one_for_one
   end

@@ -9,6 +9,7 @@ defmodule Grid do
         |> Enum.map(fn(new_position) -> %{node: node, new_position: new_position} end)
       end
     )
+    |> MapSet.new
   end
 
   def move(node, new_position, grid) do
@@ -31,6 +32,8 @@ defmodule Grid do
         end
       end
     )
+    |> Enum.map(fn(node) -> {{node.x, node.y}, node} end)
+    |> Enum.into(%{})
   end
 
   defp possible_moves(node, grid) do
@@ -52,4 +55,14 @@ defmodule Grid do
       {x, y} -> [{x - 1, y}, {x + 1, y}, {x, y - 1}, {x, y + 1}]
     end
   end
+end
+
+defimpl String.Chars, for: Grid do
+
+  def to_string(grid) do
+    0..grid.max_y
+    |> Enum.map(fn(y) -> 0..grid.max_x |> Enum.map(fn(x) -> GridNode.to_s(grid.nodes[{x, y}], grid) end) end)
+    |> Enum.join("\r\n")
+  end
+
 end

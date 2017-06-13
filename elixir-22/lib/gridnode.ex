@@ -2,6 +2,26 @@ defmodule GridNode do
 
   defstruct x: nil, y: nil, size: nil, used: nil, tag: {-1, -1}
 
+  def to_s(node, grid) do
+
+    percent_full = (node.used / node.size) * 100
+
+    {l, r} = case {node.x, node.y} do
+      {0, 0}  -> {"(", ")"}
+      _       -> {" ", " "}
+    end
+
+    m = cond do
+      node.tag == {grid.max_x, 0}         -> "G"
+      percent_full > 85 && node.used > 20 -> "#"
+      node.used == 0                      -> "_"
+      true                                -> "."
+    end
+
+    l <> m <> r
+
+  end
+
   def avail(s) do
     s.size - s.used
   end
