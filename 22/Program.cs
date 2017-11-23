@@ -35,8 +35,6 @@ node
             var count = nodes.Where(node => node.Used != 0)
                 .SelectMany(node => nodes.Where(other => !other.Equals(node) && node.Used <= other.Avail))
                 .Count();
-
-            Console.WriteLine(count);
         }
     }
 }
